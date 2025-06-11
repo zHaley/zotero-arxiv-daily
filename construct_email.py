@@ -123,19 +123,23 @@ def render_email(papers:list[ArxivPaper]):
         return framework.replace('__CONTENT__', get_empty_html())
     
     for p in tqdm(papers,desc='Rendering Email'):
-        rate = get_stars(p.score)
-        authors = [a.name for a in p.authors[:5]]
-        authors = ', '.join(authors)
-        if len(p.authors) > 5:
-            authors += ', ...'
-        if p.affiliations is not None:
-            affiliations = p.affiliations[:5]
-            affiliations = ', '.join(affiliations)
-            if len(p.affiliations) > 5:
-                affiliations += ', ...'
-        else:
-            affiliations = 'Unknown Affiliation'
-        parts.append(get_block_html(p.title, authors,rate,p.arxiv_id ,p.tldr, p.pdf_url, p.code_url, affiliations))
+        try：
+            rate = get_stars(p.score)
+            authors = [a.name for a in p.authors[:5]]
+            authors = ', '.join(authors)
+            if len(p.authors) > 5:
+                authors += ', ...'
+            if p.affiliations is not None:
+                affiliations = p.affiliations[:5]
+                affiliations = ', '.join(affiliations)
+                if len(p.affiliations) > 5:
+                    affiliations += ', ...'
+            else:
+                affiliations = 'Unknown Affiliation'
+            parts.append(get_block_html(p.title, authors,rate,p.arxiv_id ,p.tldr, p.pdf_url, p.code_url, affiliations))
+        except Exception as e:
+            print(f"[WARNING] Skipped paper '{p.title}' due to error: {e}")
+            continue  # 跳过该论文
 
     content = '<br>' + '</br><br>'.join(parts) + '</br>'
     return framework.replace('__CONTENT__', content)
